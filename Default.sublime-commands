@@ -1,0 +1,22 @@
+[
+    {
+        "caption": "Taskmaster: New Tasklist",
+        "command": "new_tasklist"
+    },
+    {
+        "caption": "Taskmaster: Open Tasklist",
+        "command": "open_tasklist"
+    },
+    {
+        "caption": "Taskmaster: Close Tasklist",
+        "command": "close_tasklist"
+    },
+    {
+        "caption": "Taskmaster: New Task",
+        "command": "new_task"
+    },
+    {
+        "caption": "Taskmaster: Open Task",
+        "command": "open_task"
+    }
+]
