@@ -285,7 +285,7 @@ class TaskList():
             )
             return
 
-        if not self.window.views():
+        if not self.window.views() and self.window.active_view():
             self.window.active_view().erase_status(STATUSBAR)
         for v in self.window.views():
             v.erase_status(STATUSBAR)
