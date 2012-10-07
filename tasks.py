@@ -89,7 +89,6 @@ def get_project(win_id):
 class Task():
     def __init__(self, title, take_context=False):
         self.title = title
-        self.views = []
         self.active = False
         self.take_context = take_context
         self.window = None
@@ -97,13 +96,20 @@ class Task():
     def get_data(self):
         return dict(
             title = self.title,
-            views = map(self.view_to_dict, self.views) if self.active else self.views
+            views = self.views
         )
+
+    @property
+    def views(self):
+        if self.active:
+            return map(self.view_to_dict, self.window.views())
+        else:
+            return self._views
 
     @classmethod
     def from_data(cls, data):
         t = cls(data['title'])
-        t.views = data['views']
+        t._views = data['views']
         return t
 
 
@@ -145,14 +151,13 @@ class Task():
         self.active = True
         if self.take_context:
             # Import all current views into this task
-            self.views = self.window.views()[:]
             self.take_context = False
         else:
             # close all current views
             while self.window.active_view():
                 self.window.run_command('close')
             # open new views into current files
-            self.views = map(self.dict_to_view, self.views)
+            map(self.dict_to_view, self._views)
 
         # Loading is asynchronous; we add new views to the current task on load.
         # Wait until all activated views are done loading before attaching events.
@@ -166,8 +171,8 @@ class Task():
         sublime.set_timeout(connect_events, 100)
 
     def deactivate(self):
-        # Set statusbar text
-        self.views = map(self.view_to_dict, self.views)
+        self._views = map(self.view_to_dict, self.window.views())
+        self.window = None
         self.active = False
 
         TasklistEvents.loaded.disconnect(self.add_view)
