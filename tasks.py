@@ -20,38 +20,16 @@ class TasklistEvents(sublime_plugin.EventListener):
     @filter_events
     def on_load(self, view):
         self.loaded(view)
-        return
-
-        ctl = TaskList.get_for_window(window)
-        if not ctl:
-            return
-
-        ctl.set_statusbar(view)
-        ctl.save()
 
     closed = Signal()
     @filter_events
     def on_close(self, view):
         self.closed(view)
-        return
-
-        ctl = TaskList.get_for_window(window)
-        if not ctl:
-            return
-
-        ctl.save()
 
     activated = Signal()
     @filter_events
     def on_activated(self, view):
         self.activated(view)
-        return
-
-        ctl = TaskList.get_for_window(window)
-        if not ctl:
-            return
-
-        ctl.save()
 
 def get_project(win_id):
     project = None
