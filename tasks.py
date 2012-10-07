@@ -97,7 +97,8 @@ class Task():
         """
         return dict(
             file = view.file_name(),
-            selection = [(r.a, r.b) for r in view.sel()]
+            selection = [(r.a, r.b) for r in view.sel()],
+            position = view.viewport_position(),
         )
 
     def dict_to_view(self, data):
@@ -112,6 +113,14 @@ class Task():
             view.sel().clear()
             for r in data['selection']:
                 view.sel().add(sublime.Region(r[0], r[1]))
+
+        if 'position' in data:
+            def load_position():
+                if view.is_loading():
+                    sublime.set_timeout(load_position, 100)
+                else:
+                    view.set_viewport_position(tuple(data['position']), False)
+            sublime.set_timeout(load_position, 100)
 
         return view
 
