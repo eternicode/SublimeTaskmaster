@@ -87,3 +87,24 @@ class OpenTaskCommand(sublime_plugin.WindowCommand):
             ctl.activate_task(title)
 
         self.window.show_quick_panel(tasks, open_task)
+
+
+class RemoveTaskCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        ctl = TaskList.get_for_window(self.window)
+        if not ctl:
+            sublime.status_message(
+                'No active tasklist found; activate or create a tasklist before '
+                'opening tasks'
+            )
+            return
+
+        tasks = map(lambda t: t.title, ctl.tasks)
+
+        def remove_task(ix):
+            title = tasks[ix]
+            ctl.remove_task(title)
+
+        self.window.show_quick_panel(tasks, remove_task)
+
+

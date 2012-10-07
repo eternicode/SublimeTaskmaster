@@ -342,6 +342,23 @@ class TaskList():
         t.activate_on_window(self.window)
         self.set_statusbars()
 
+    def remove_task(self, task):
+        if not self.window:
+            raise Exception(
+                'Tasklist %s has no window' % self
+            )
+
+        t = self._to_task(task)
+        if not t:
+            raise Exception(
+                'Tasklist %s has no task identifiable with "%s"' % (self, task)
+            )
+
+        if t.active:
+            t.deactivate()
+        self.tasks.remove(t)
+        self.set_statusbars()
+
     def deactivate_tasks(self):
         for t in self.tasks:
             if t.active:

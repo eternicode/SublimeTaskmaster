@@ -18,5 +18,9 @@
     {
         "caption": "Taskmaster: Open Task",
         "command": "open_task"
+    },
+    {
+        "caption": "Taskmaster: Remove Task",
+        "command": "remove_task"
     }
 ]
