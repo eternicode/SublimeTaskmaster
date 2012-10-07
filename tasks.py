@@ -96,17 +96,22 @@ class Task():
         Converts an active view into a data dict for storage
         """
         return dict(
-            file = view.file_name()
+            file = view.file_name(),
+            selection = [(r.a, r.b) for r in view.sel()]
         )
 
-    def dict_to_view(self, view):
+    def dict_to_view(self, data):
         """
         Converts a view data dict into a new view
         """
         if not self.window:
-            return view
+            return data
 
-        view = self.window.open_file(view['file'])
+        view = self.window.open_file(data['file'])
+        if 'selection' in data:
+            view.sel().clear()
+            for r in data['selection']:
+                view.sel().add(sublime.Region(r[0], r[1]))
 
         return view
 
