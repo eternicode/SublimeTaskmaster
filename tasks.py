@@ -70,11 +70,13 @@ class Task():
         self.active = False
         self.take_context = take_context
         self.window = None
+        self._active_view_ix = -1
 
     def get_data(self):
         return dict(
             title = self.title,
-            views = self.views
+            views = self.views,
+            active = self._active_view_ix
         )
 
     @property
@@ -88,6 +90,8 @@ class Task():
     def from_data(cls, data):
         t = cls(data['title'])
         t._views = data['views']
+        if 'active' in data:
+            t._active_view_ix = data['active']
         return t
 
 
@@ -135,6 +139,11 @@ class Task():
     def load_view(self, view):
         self.window.open_file(view['file'])
 
+    def set_active_view(self, view):
+        vid = self.window.active_view().id()
+        vids = [_.id() for _ in self.window.views()]
+        self._active_view_ix = vids.index(vid) if vid in vids else -1
+
     def activate_on_window(self, window):
         if self.active:
             return
@@ -151,6 +160,15 @@ class Task():
             # open new views into current files
             map(self.dict_to_view, self._views)
 
+        def activate_active_view():
+            loading = any(v.is_loading() for v in window.views())
+            if loading:
+                sublime.set_timeout(activate_active_view, 100)
+            else:
+                self.window.focus_view(self.window.views()[self._active_view_ix])
+        if self._active_view_ix != -1:
+            sublime.set_timeout(activate_active_view, 100)
+
         # Loading is asynchronous; we add new views to the current task on load.
         # Wait until all activated views are done loading before attaching events.
         def connect_events():
@@ -160,15 +178,21 @@ class Task():
             else:
                 TasklistEvents.loaded.connect(self.add_view)
                 TasklistEvents.closed.connect(self.remove_view)
+                TasklistEvents.activated.connect(self.set_active_view)
         sublime.set_timeout(connect_events, 100)
 
     def deactivate(self):
+        vid = self.window.active_view().id()
+        vids = [_.id() for _ in self.window.views()]
+        active_view_ix = vids.index(vid) if vid in vids else -1
+
         self._views = map(self.view_to_dict, self.window.views())
         self.window = None
         self.active = False
 
         TasklistEvents.loaded.disconnect(self.add_view)
         TasklistEvents.closed.disconnect(self.remove_view)
+        TasklistEvents.activated.disconnect(self.set_active_view)
 
 
 class TaskList():
