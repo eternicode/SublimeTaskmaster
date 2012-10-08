@@ -160,26 +160,26 @@ class Task():
             # open new views into current files
             map(self.dict_to_view, self._views)
 
-        def activate_active_view():
+        # Async, post-load actions (wait until all views are loaded)
+        loaded = Signal()
+        def load_wait():
             loading = any(v.is_loading() for v in window.views())
             if loading:
-                sublime.set_timeout(activate_active_view, 100)
+                sublime.set_timeout(load_wait, 100)
             else:
-                self.window.focus_view(self.window.views()[self._active_view_ix])
-        if self._active_view_ix != -1:
-            sublime.set_timeout(activate_active_view, 100)
+                loaded()
+        sublime.set_timeout(load_wait, 100)
 
-        # Loading is asynchronous; we add new views to the current task on load.
-        # Wait until all activated views are done loading before attaching events.
+        if self._active_view_ix != -1:
+            def activate_active_view():
+                self.window.focus_view(self.window.views()[self._active_view_ix])
+            loaded.connect(activate_active_view)
+
         def connect_events():
-            loading = any(v.is_loading() for v in window.views())
-            if loading:
-                sublime.set_timeout(connect_events, 100)
-            else:
-                TasklistEvents.loaded.connect(self.add_view)
-                TasklistEvents.closed.connect(self.remove_view)
-                TasklistEvents.activated.connect(self.set_active_view)
-        sublime.set_timeout(connect_events, 100)
+            TasklistEvents.loaded.connect(self.add_view)
+            TasklistEvents.closed.connect(self.remove_view)
+            TasklistEvents.activated.connect(self.set_active_view)
+        loaded.connect(connect_events)
 
     def deactivate(self):
         vid = self.window.active_view().id()
